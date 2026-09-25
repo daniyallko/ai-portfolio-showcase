@@ -45,3 +45,6 @@ htmlcov/
 .vscode/
 .idea/
 *.swp
+
+# Superpowers SDD
+.superpowers/

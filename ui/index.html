@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daniyal | AI Systems Engineer & RAG Showcase</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar: Portfolio Profile -->
+    <aside class="profile-panel">
+      <div class="profile-header">
+        <div class="avatar">D</div>
+        <h2>Daniyal</h2>
+        <p class="role">AI Systems & RAG Engineer</p>
+        <span class="status-badge"><span class="dot"></span> Online (Oracle Cloud VM)</span>
+      </div>
+      <div class="tech-stack-card">
+        <h3>Core Stack</h3>
+        <div class="tags">
+          <span class="tag">Python</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">pgvector</span>
+          <span class="tag">LangChain</span>
+          <span class="tag">Gemini API</span>
+        </div>
+      </div>
+      <div class="showcase-section">
+        <h3>Interactive Demos</h3>
+        <button class="demo-btn" onclick="sendPrompt('Tell me about Daniyal\'s experience with advanced RAG systems.')">
+          📄 Ask About Experience (RAG)
+        </button>
+        <button class="demo-btn" onclick="sendPrompt('Show me all projects and their performance metrics in PostgreSQL.')">
+          📊 Query Projects (Text-to-SQL)
+        </button>
+        <button class="demo-btn" onclick="sendPrompt('What are Daniyal\'s top skills and years of experience?')">
+          🔍 Query Skills Inventory
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Chat & Showcase Canvas -->
+    <main class="chat-canvas">
+      <header class="canvas-header">
+        <div>
+          <h1>AI Portfolio Representative</h1>
+          <p>Powered by Hybrid Search (pgvector + tsvector), RRF Reranking, and Gemini 2.5</p>
+        </div>
+      </header>
+
+      <div id="chat-messages" class="messages-container"></div>
+
+      <footer class="input-footer">
+        <form id="chat-form" onsubmit="handleSubmit(event)">
+          <input type="text" id="user-input" placeholder="Ask about Daniyal's projects, run a Text-to-SQL query, or explore RAG..." autocomplete="off">
+          <button type="submit" id="send-btn">Send</button>
+        </form>
+      </footer>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

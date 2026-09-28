@@ -25,8 +25,14 @@ def classify_intent_heuristic(query: str) -> IntentType:
         return IntentType.ABOUT_DANIYAL_RAG
 
     # Structured Data / SQL: querying metrics, counts, stats, or database records
-    if any(k in q for k in ["how many", "count", "metrics", "stats", "highest", "lowest", "average", "query projects", "run sql", "show records", "list projects", "skills inventory"]):
+    if any(k in q for k in [
+        "how many", "count", "metrics", "stats", "highest", "lowest", "average",
+        "query projects", "run sql", "show records", "list projects", "show projects",
+        "all projects", "in the database", "from database", "in postgres", "skills inventory",
+        "performance metrics"
+    ]):
         return IntentType.PORTFOLIO_SQL
+
 
     # Default to general chat for all other questions, concepts, technical queries, or greetings
     return IntentType.GENERAL_CHAT

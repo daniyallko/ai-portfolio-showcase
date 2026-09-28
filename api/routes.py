@@ -16,25 +16,36 @@ from core.llm import stream_chat_response
 router = APIRouter(prefix="/api")
 
 SYSTEM_PROMPT_GENERAL = (
-    "You are Daniyal's AI Portfolio Representative — an intelligent and friendly assistant. "
-    "You represent Daniyal, an AI Systems & RAG Engineer specializing in Hybrid RAG, pgvector, and FastAPI. "
-    "You are capable of having natural conversations, explaining software engineering and AI/ML concepts, "
-    "answering programming questions, discussing architecture, or chatting about Daniyal's background. "
-    "Keep answers informative, engaging, well-formatted with markdown, and concise."
+    "You are Daniyal's AI Portfolio Representative, powered by Gemini 3.8 Flash. "
+    "Daniyal is an AI Systems Engineer specializing in Hybrid RAG (pgvector + tsvector, RRF) and FastAPI. "
+    "Provide crisp, high-density responses in 1-2 paragraphs using clear markdown formatting. Be direct and avoid conversational filler."
 )
 
 SYSTEM_PROMPT_RAG = (
-    "You are Daniyal's AI Portfolio Representative. Answer the user's question accurately using only the provided "
-    "portfolio documents. Attribute statements by citing source markers like [1] or [2] where appropriate. "
-    "Keep answers professional, technical, and concise."
+    "You are Daniyal's AI Portfolio Representative, powered by Gemini 3.8 Flash. "
+    "Answer the user's question directly and concisely using only the provided portfolio documents. "
+    "Cite source markers like [1]. Keep response under 2 paragraphs."
 )
 
 SYSTEM_PROMPT_SQL = (
-    "You are Daniyal's AI Portfolio Representative. Summarize the provided PostgreSQL database query results "
-    "about Daniyal's projects, performance metrics, or skills inventory in a clear, concise, and structured format."
+    "You are Daniyal's AI Portfolio Representative, powered by Gemini 3.8 Flash. "
+    "Summarize the provided PostgreSQL database query results about Daniyal's projects, performance metrics, or skills inventory in a concise, bulleted format."
 )
 
+_cached_embedder_func = None
+
+def get_embedder_function():
+    global _cached_embedder_func
+    if _cached_embedder_func is None:
+        try:
+            embedder = Embedder()
+            _cached_embedder_func = embedder.embed_query
+        except Exception:
+            return lambda t: [0.0] * 768
+    return _cached_embedder_func
+
 class ChatRequest(BaseModel):
+
     message: str
     session_id: str | None = None
 
@@ -72,20 +83,17 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
                 prompt = (
                     f"User Question: {request.message}\n"
                     f"Executed SQL: {sql_query}\n"
-                    f"Query Results: {json.dumps(rows[:10])}\n\n"
+                    f"Query Results: {json.dumps(rows[:10], default=str)}\n\n"
                     "Summarize these database results concisely for the user:"
                 )
+
                 async for token in stream_chat_response(prompt, system_instruction=SYSTEM_PROMPT_SQL):
                     yield f"data: {json.dumps({'type': 'token', 'content': token})}\n\n"
 
             elif intent == IntentType.ABOUT_DANIYAL_RAG:
-                try:
-                    embedder = Embedder()
-                    embedder_func = embedder.embed_query
-                except Exception:
-                    embedder_func = lambda t: [0.0] * 768
-
+                embedder_func = get_embedder_function()
                 retriever = HybridRetriever(session=db, embedder_func=embedder_func)
+
                 try:
                     chunks = await retriever.search(request.message, top_k=4)
                 except Exception:

@@ -1,14 +1,26 @@
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000' : '';
 const chatMessages = document.getElementById('chat-messages');
 
+let scrollPending = false;
+function scrollToBottom() {
+  if (!scrollPending) {
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      scrollPending = false;
+    });
+  }
+}
+
 function appendMessage(role, text) {
   const div = document.createElement('div');
   div.className = `message ${role}`;
   div.innerHTML = `<div class="content">${text}</div>`;
   chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  scrollToBottom();
   return div;
 }
+
 
 function sendPrompt(text) {
   document.getElementById('user-input').value = text;
@@ -62,8 +74,9 @@ async function handleSubmit(e) {
               } else {
                 contentDiv.textContent = accumulatedText;
               }
-              chatMessages.scrollTop = chatMessages.scrollHeight;
+              scrollToBottom();
             } else if (data.type === 'intent') {
+
               executionInfo.intent = data.intent;
             } else if (data.type === 'sql') {
               executionInfo.sql = data.query;
@@ -100,9 +113,10 @@ async function handleSubmit(e) {
       </details>
     `;
     assistantMsg.appendChild(drawer);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    scrollToBottom();
 
   } catch (err) {
+
     contentDiv.innerText = 'Error connecting to backend service. Please check API status.';
   }
 }

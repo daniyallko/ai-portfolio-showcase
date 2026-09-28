@@ -10,10 +10,12 @@ logger = get_logger("llm")
 
 
 FALLBACK_MODELS = [
-    "gemma-4-26b-a4b-it",
     settings.CHAT_MODEL,
-    "gemma-4-31b-it",
+    "gemini-3.6-flash",
+    "gemini-flash-lite-latest",
+    "gemini-3-flash-preview",
 ]
+
 
 
 async def stream_chat_response(
@@ -23,7 +25,8 @@ async def stream_chat_response(
 ) -> AsyncGenerator[str, None]:
     """
     Streams LLM text responses using Google GenAI SDK.
-    Supports primary model with automatic fallback to secondary models on 429 or 503 errors.
+    Prioritizes Gemini 3.8 Flash with automatic fallback to Gemini Flash siblings on 429 or 503 errors.
+    Optimized for low-latency streaming and high information density.
     """
     key = api_key or settings.GEMINI_API_KEY
     if not key or key == "test_gemini_key" or "dummy" in key:
@@ -34,15 +37,29 @@ async def stream_chat_response(
         return
 
     client = genai.Client(api_key=key)
-    config = types.GenerateContentConfig(
-        system_instruction=system_instruction,
-        temperature=0.7,
-    ) if system_instruction else types.GenerateContentConfig(temperature=0.7)
 
     for model in FALLBACK_MODELS:
         try:
-            chat = client.aio.chats.create(model=model, config=config)
-            response = await chat.send_message_stream(prompt)
+            if "gemma" in model.lower():
+                full_prompt = f"Instructions:\n{system_instruction}\n\nUser Request:\n{prompt}" if system_instruction else prompt
+                model_config = types.GenerateContentConfig(
+                    temperature=0.2,
+                    max_output_tokens=800,
+                )
+            else:
+                full_prompt = prompt
+                model_config = types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.2,
+                    max_output_tokens=800,
+                ) if system_instruction else types.GenerateContentConfig(temperature=0.2, max_output_tokens=800)
+
+
+            response = await client.aio.models.generate_content_stream(
+                model=model,
+                contents=full_prompt,
+                config=model_config
+            )
             yielded_any = False
             async for chunk in response:
                 if chunk.text:
@@ -53,6 +70,8 @@ async def stream_chat_response(
         except (ClientError, APIError, Exception) as err:
             logger.warning(f"LLM model {model} call failed, trying next fallback model: {err}")
             continue
+
+
 
 
     # If all models failed or hit quotas, yield graceful fallback explanation

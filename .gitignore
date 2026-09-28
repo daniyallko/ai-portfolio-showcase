@@ -48,3 +48,5 @@ htmlcov/
 
 # Superpowers SDD
 .superpowers/
+node_modules/
+.neon

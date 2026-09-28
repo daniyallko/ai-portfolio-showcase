@@ -29,6 +29,8 @@ async function handleSubmit(e) {
   contentDiv.innerText = '';
 
   let executionInfo = { intent: null, latency: null, sql: null, citations: [] };
+  let accumulatedText = '';
+  let streamBuffer = '';
 
   try {
     const response = await fetch(`${API_BASE}/api/chat`, {
@@ -44,15 +46,23 @@ async function handleSubmit(e) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
+      streamBuffer += decoder.decode(value, { stream: true });
+      const lines = streamBuffer.split('\n');
+      streamBuffer = lines.pop(); // Retain incomplete line in buffer
 
       for (const line of lines) {
-        if (line.startsWith('data: ')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ')) {
           try {
-            const data = JSON.parse(line.substring(6));
+            const data = JSON.parse(trimmed.substring(6));
             if (data.type === 'token') {
-              contentDiv.innerText += data.content;
+              accumulatedText += data.content;
+              if (window.marked && typeof window.marked.parse === 'function') {
+                contentDiv.innerHTML = window.marked.parse(accumulatedText);
+              } else {
+                contentDiv.textContent = accumulatedText;
+              }
+              chatMessages.scrollTop = chatMessages.scrollHeight;
             } else if (data.type === 'intent') {
               executionInfo.intent = data.intent;
             } else if (data.type === 'sql') {
@@ -60,18 +70,23 @@ async function handleSubmit(e) {
             } else if (data.type === 'done') {
               executionInfo.latency = data.latency_ms;
               executionInfo.citations = data.citations;
+            } else if (data.type === 'error') {
+              contentDiv.innerHTML = `<span style="color: #ef4444;">Error: ${data.message}</span>`;
             }
           } catch (e) {
-            // Ignore partial JSON chunks
+            // Ignore incomplete chunks
           }
         }
       }
     }
 
     if (executionInfo.citations && executionInfo.citations.length > 0) {
+      const citationsContainer = document.createElement('div');
+      citationsContainer.className = 'citations-container';
       executionInfo.citations.forEach(cit => {
-        contentDiv.innerHTML += ` <span class="citation-badge" title="${cit.snippet}">[${cit.index}: ${cit.source}]</span>`;
+        citationsContainer.innerHTML += ` <span class="citation-badge" title="${cit.snippet}">[${cit.index}: ${cit.source}]</span>`;
       });
+      assistantMsg.appendChild(citationsContainer);
     }
 
     const drawer = document.createElement('div');
@@ -85,8 +100,10 @@ async function handleSubmit(e) {
       </details>
     `;
     assistantMsg.appendChild(drawer);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 
   } catch (err) {
     contentDiv.innerText = 'Error connecting to backend service. Please check API status.';
   }
 }
+

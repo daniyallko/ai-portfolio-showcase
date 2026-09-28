@@ -14,15 +14,24 @@ class AgentDecision(BaseModel):
 
 def classify_intent_heuristic(query: str) -> IntentType:
     q = query.lower()
-    if any(k in q for k in ["how many", "count", "metrics", "stats", "highest", "lowest", "table", "average"]):
-        return IntentType.PORTFOLIO_SQL
-    if any(k in q for k in ["daniyal", "experience", "resume", "projects", "skills", "background", "education"]):
-        return IntentType.ABOUT_DANIYAL_RAG
+    # Live web search queries: asking for real-time external info
+    if any(k in q for k in ["latest news", "today's weather", "stock price", "who won today", "current release date"]):
+        return IntentType.LIVE_WEB_SEARCH
     if any(k in q for k in ["latest", "news", "today", "current weather", "who is the current"]):
         return IntentType.LIVE_WEB_SEARCH
-    if any(k in q for k in ["hi", "hello", "hey", "who are you", "what can you do"]):
-        return IntentType.GENERAL_CHAT
-    return IntentType.ABOUT_DANIYAL_RAG
+
+    # Portfolio RAG: specifically asking about Daniyal's background, experience, resume, career
+    if any(k in q for k in ["daniyal", "resume", "experience", "background", "career", "education", "worked on", "his skills", "his projects", "tell me about him"]):
+        return IntentType.ABOUT_DANIYAL_RAG
+
+    # Structured Data / SQL: querying metrics, counts, stats, or database records
+    if any(k in q for k in ["how many", "count", "metrics", "stats", "highest", "lowest", "average", "query projects", "run sql", "show records", "list projects", "skills inventory"]):
+        return IntentType.PORTFOLIO_SQL
+
+    # Default to general chat for all other questions, concepts, technical queries, or greetings
+    return IntentType.GENERAL_CHAT
+
+
 
 class Citation(BaseModel):
     index: int

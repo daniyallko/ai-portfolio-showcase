@@ -52,3 +52,15 @@ async def test_chat_endpoint_streams_error_event(monkeypatch):
         assert '"type": "error"' in body
         assert "LLM Service Disconnected" in body
 
+
+@pytest.mark.asyncio
+async def test_chat_endpoint_general_chat():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/chat", json={"message": "What is a vector database?"})
+        assert response.status_code == 200
+        body = response.text
+        assert '"intent": "GENERAL_CHAT"' in body
+        assert '"type": "token"' in body
+
+

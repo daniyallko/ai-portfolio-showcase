@@ -28,9 +28,21 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(
 .message { max-width: 80%; padding: 16px; border-radius: 8px; line-height: 1.6; }
 .message.user { align-self: flex-end; background: var(--primary-hover); color: white; }
 .message.assistant { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); }
-.citation-badge { background: #0369a1; color: #e0f2fe; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 4px; font-family: 'JetBrains Mono', monospace; }
+.message .content { word-break: break-word; }
+.message .content p { margin-bottom: 8px; }
+.message .content p:last-child { margin-bottom: 0; }
+.message .content ul, .message .content ol { margin-left: 20px; margin-bottom: 8px; }
+.message .content li { margin-bottom: 4px; }
+.message .content code { background: #0f172a; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.message .content pre { background: #0f172a; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 8px 0; border: 1px solid var(--border); }
+.message .content pre code { background: transparent; padding: 0; }
+.citations-container { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.citation-badge { background: #0369a1; color: #e0f2fe; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-family: 'JetBrains Mono', monospace; display: inline-block; cursor: default; }
 .inspector-drawer { margin-top: 12px; padding: 10px; background: #0b1120; border-radius: 6px; font-size: 12px; font-family: 'JetBrains Mono', monospace; border: 1px dashed var(--border); }
+.inspector-drawer details summary { cursor: pointer; color: var(--primary); }
+.inspector-drawer details p { margin-top: 6px; }
 .input-footer { padding: 20px 32px; border-top: 1px solid var(--border); background: var(--bg-card); }
 #chat-form { display: flex; gap: 12px; }
 #user-input { flex: 1; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 14px; outline: none; }
 #send-btn { padding: 12px 24px; background: var(--primary); color: var(--bg-dark); font-weight: 600; border: none; border-radius: 6px; cursor: pointer; }
+

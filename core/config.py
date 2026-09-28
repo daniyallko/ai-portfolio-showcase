@@ -8,9 +8,9 @@ class Settings(BaseSettings):
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/portfolio_ai",
         description="Async PostgreSQL connection URL"
     )
-    EMBEDDING_MODEL: str = "models/text-embedding-004"
+    EMBEDDING_MODEL: str = "models/gemini-embedding-001"
     EMBEDDING_DIMENSIONS: int = 768
-    CHAT_MODEL: str = "gemini-2.5-flash"
+    CHAT_MODEL: str = "gemini-3.8-flash"
     RRF_K: int = 60
     TOP_K_CHUNKS: int = 4
     PORT: int = 8000
@@ -21,14 +21,11 @@ class Settings(BaseSettings):
     def normalize_database_url(cls, v: str) -> str:
         if isinstance(v, str):
             v = v.strip('"\'')
-            # Normalize driver
             if v.startswith("postgres://"):
                 v = "postgresql+asyncpg://" + v[len("postgres://"):]
             elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
                 v = "postgresql+asyncpg://" + v[len("postgresql://"):]
-            # Normalize sslmode for asyncpg
             v = re.sub(r"[?&]sslmode=([^&]+)", r"?ssl=\1", v)
-            # Strip channel_binding which asyncpg does not support
             v = re.sub(r"[?&]channel_binding=[^&]+", "", v)
             if "?" in v:
                 base, query = v.split("?", 1)

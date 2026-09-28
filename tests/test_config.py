@@ -8,9 +8,10 @@ def test_settings_load_defaults(monkeypatch):
     settings = Settings()
     assert settings.GEMINI_API_KEY == "test-key-12345"
     assert settings.DATABASE_URL == "postgresql+asyncpg://postgres:postgres@localhost:5432/portfolio_ai"
-    assert settings.EMBEDDING_MODEL == "models/text-embedding-004"
+    assert settings.EMBEDDING_MODEL == "models/gemini-embedding-001"
     assert settings.EMBEDDING_DIMENSIONS == 768
-    assert settings.CHAT_MODEL == "gemini-2.5-flash"
+    assert settings.CHAT_MODEL == "gemini-3.8-flash"
+
 
 def test_settings_normalizes_postgres_url(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "postgresql://user:pass@ep-cool.neon.tech/neondb?sslmode=require")

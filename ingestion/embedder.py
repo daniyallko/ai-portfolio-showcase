@@ -6,7 +6,8 @@ class Embedder:
         self.api_key = api_key or settings.GEMINI_API_KEY
         self._client = GoogleGenerativeAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
-            google_api_key=self.api_key
+            google_api_key=self.api_key,
+            output_dimensionality=settings.EMBEDDING_DIMENSIONS
         )
 
     def embed_query(self, text: str) -> list[float]:
